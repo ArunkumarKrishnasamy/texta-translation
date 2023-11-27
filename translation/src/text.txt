@@ -1,0 +1,4 @@
+Copmplete the balance front end work for translation page
+In backend bring the document text from amazon aws s3
+Integrate both the front end and backend
+Complete the splitting documents into pages 

@@ -1,0 +1,238 @@
+@import url("https://fonts.googleapis.com/css2?family=Raleway&display=swap");
+
+/* ROOT CSS VARIABLES */
+:root {
+  --color-white: #ffffff;
+  --color-light-blue: #f2fbfe;
+  --color-blue: #2bb8e6;
+  --color-gray-light: #f2f2f2;
+  --color-gray-dark: #606060;
+  --color-dark: pink;
+  --color-primary: #ea6e45;
+  --card-padding: 1.6rem;
+  --padding-1: 1rem;
+  --padding-2: 8px;
+}
+* {
+  margin: 0;
+  padding: 0;
+  outline: 0;
+  border: 0;
+  list-style: none;
+  box-sizing: border-box;
+  text-decoration: none !important;
+}
+.content {
+  background-color: #f2fbfe;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+.trans_main {
+  margin-top: 1%;
+}
+.topbar {
+  width: 100%;
+  background-color: #2bb8e6;
+  height: 8%;
+  display: flex;
+  overflow: auto;
+  font-family: "Raleway", sans-serif;
+}
+.logo {
+  width: 20%;
+  flex: 2;
+  float: left;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.logophoto {
+  width: 100%;
+  height: 50%;
+}
+.search {
+  flex: 7;
+  float: left;
+  display: grid;
+  place-items: center;
+}
+.inputbox {
+  width: 80%;
+}
+.gap {
+  flex: 0.3;
+}
+.notification {
+  padding-right: 5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title_bar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  font-family: "Raleway", sans-serif;
+  font-size: 25px;
+  color: #707070;
+  opacity: 1;
+  font-weight: 600;
+  margin: 15px;
+}
+.right_title {
+  display: flex;
+  flex-direction: row;
+}
+.dictionaryIcon,
+.document_title,
+.draft_btn,
+.save_btn {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-right: 25px;
+}
+
+.draft_btn :hover,
+.save_btn :hover {
+  color: var(--color-primary);
+  font-size: 20px;
+  transition: 0.5s;
+}
+/* .text {
+  font-size: 18px;
+  margin-right: 20px;
+  color: #f2f2f2;
+  cursor: pointer;
+} */
+.body_text {
+  font-size: 20px;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.icon1 {
+  font-size: 20px;
+  color: white;
+  cursor: pointer;
+  margin: 2px;
+}
+.text:hover {
+  color: var(--color-primary);
+  font-size: 20px;
+  transition: 0.5s;
+}
+.img {
+  border-radius: 100px;
+  height: 50px;
+  width: 50px;
+  cursor: pointer;
+  border: var(--color-gray-dark);
+  align-items: center;
+  margin: 10px;
+}
+.img:hover {
+  height: 60px;
+  width: 60px;
+  transition: 0.2s;
+}
+.TransMainDashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.sourcedoc,
+.transdoc {
+  background-color: #ffffff;
+  text-align: left;
+  margin-inline: 2%;
+  margin-left: 3%;
+  padding: 5px;
+  padding-left: 10px;
+  width: 750px;
+  /* height: 500px !important; */
+  content: scroll;
+  vertical-align: top;
+  border-radius: 5px;
+}
+.trans_footer {
+  background-color: #565656;
+  color: #ffffff;
+  height: 60px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 5px;
+}
+.left_footer,
+.right_footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 10px;
+}
+.right_footer {
+  color: #ffffff;
+  font-size: 15px;
+  font-family: "Raleway", sans-serif;
+}
+.right_footer .fileStatus {
+  width: 150px;
+  margin-inline: 10px;
+}
+
+.docbtn {
+  width: 120px;
+  height: 40px;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 15px;
+  font-family: "Raleway", sans-serif;
+  background-color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2px;
+  cursor: pointer;
+}
+.docbtn:hover {
+  transition: 0.5s;
+  font-weight: 600;
+  background-color: #e58f73;
+  transition: 0.5s;
+}
+.pagebtn {
+  background-color: #ffffff;
+  width: 50px;
+  font-family: "Raleway", sans-serif;
+  height: 40px;
+  font-weight: 500;
+  padding: 2px;
+  border-radius: 8px;
+  margin: 2px;
+  margin-left: 5px;
+}
+.pagebtn:hover {
+  font-weight: 600;
+  transition: 0.2s;
+  cursor: pointer;
+}
+.page {
+  margin-left: 10px;
+  font-family: "Raleway", sans-serif;
+  font-weight: 500;
+}
+.react-pdf__Page {
+  overflow-y: scroll;
+  height: 500px;
+  position: relative;
+}
+.ql-container {
+  box-sizing: border-box;
+  font-family: "Raleway", sans-serif;
+  font-size: 13px;
+  height: 90% !important;
+  margin: 0px;
+  position: relative;
+}
