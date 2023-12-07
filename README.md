@@ -1,0 +1,2 @@
+# texta-translation
+# translation page
