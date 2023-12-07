@@ -84,6 +84,7 @@
 .right_title {
   display: flex;
   flex-direction: row;
+  /* align-items: center; */
 }
 .dictionaryIcon,
 .document_title,
@@ -111,6 +112,12 @@
   font-size: 20px;
   cursor: pointer;
   margin-left: 5px;
+  background: transparent;
+  color: #707070;
+}
+.document_title:hover,
+.body_text:hover {
+  color: var(--color-primary);
 }
 
 .icon1 {
@@ -179,6 +186,7 @@
 }
 .right_footer .fileStatus {
   width: 150px;
+  /* font-size: 10px; */
   margin-inline: 10px;
 }
 

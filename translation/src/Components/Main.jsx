@@ -1,19 +1,20 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
-
-// import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import Mydocument from "./Mydocument";
-import { Document, Page } from "react-pdf";
-import pdffile from "./sample.pdf";
+import { Dropdown } from "bootstrap";
+import React, { useEffect, useState, useRef } from "react";
+import { Document, Page, usePageContext } from "react-pdf";
 import { pdfjs } from "react-pdf";
-import ReactQuill from "react-quill";
-import { Quill } from "react-quill";
+import ReactQuill, { Quill } from "react-quill";
+// import { Quill, Delta as DeltaType } from "quill";
 import "react-quill/dist/quill.snow.css";
+import { Link, useParams } from "react-router-dom";
 
 function Main() {
+  const [pdfData, setpdfData] = useState();
   const [pdfURL, setpdfURL] = useState("");
-  const [doctitle, setDocTitle] = useState("Translate.docx");
-  const [value, setValue] = useState("");
+  const [doctitle, setDocTitle] = useState("Translation.pdf");
+  const params = useParams();
+  let file_id = parseInt(params.file_id);
+  var Translation = "";
 
   pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     "pdfjs-dist/build/pdf.worker.min.js",
@@ -40,7 +41,7 @@ function Main() {
 
     ["clean"], // remove formatting button
   ];
-  var editor = new Quill('#editor', options);
+
   var modules = {
     toolbar: toolbarOptions,
   };
@@ -48,8 +49,9 @@ function Main() {
   const getDoc = async () => {
     try {
       let textdoc = await axios.get(
-        "http://localhost:3002/getdocument/test_file.docx"
+        `http://localhost:3002/getdocument/${params.file_id}`
       );
+      setpdfData(textdoc.data);
       setpdfURL(textdoc.data.url);
       setDocTitle(textdoc.data.fileName);
     } catch (error) {
@@ -58,51 +60,223 @@ function Main() {
     }
   };
 
+  const [TranslationText, setTranslationText] = useState("");
+  const [triggerRerender, setTriggerRerender] = useState(false);
+  const [disableButton, setDisableButton] = useState(false);
+  const [file_data, setFileData] = useState();
+  const [Inprogress, setInprogress] = useState();
+  const [Reviewlist, setReviewlist] = useState();
+  const [pendingValue, setPendingValue] = useState();
+
+  const getFileData = async () => {
+    try {
+      let Arrayfile_data = await axios.get(
+        `http://localhost:3002/getfiledata?file_id=${file_id}`
+      );
+      await setFileData(Arrayfile_data);
+    } catch (error) {
+      console.error(error);
+      alert("Error in getting file Data");
+    }
+  };
+  const GetStatusBar = (file_data) => {
+    // console.log(file_data.data.rows);
+    if (file_data.data.rows.length > 0) {
+      var FilterData = file_data.data.rows;
+      console.log(FilterData);
+      var Inprogresslist = FilterData.filter(
+        (obj) => obj.is_draft == true && obj.is_submitted == false
+      );
+      console.log(Inprogresslist.length);
+      setInprogress(Inprogresslist.length);
+      var pendinglist = FilterData.filter(
+        (obj) => obj.is_draft == false && obj.is_submitted == false
+      );
+      setPendingValue(pendinglist.length);
+      var ReadyForReviewList = FilterData.filter(
+        (obj) => obj.is_submitted == true && obj.is_draft == false
+      );
+      setReviewlist(ReadyForReviewList.length);
+
+      console.log(pendinglist.length);
+      console.log(ReadyForReviewList.length);
+    } else {
+      FilterData = file_data.data.rows;
+      console.log(FilterData);
+    }
+    // else {
+    //   setInprogress(Inprogresslist.length);
+    //   setPendingValue(pendinglist.length);
+    //   setReviewlist(ReadyForReviewList.length);
+    // }
+  };
+  const [isReadOnly, setIsReadOnly] = useState(false);
+  const getTranslationText = async (pageid) => {
+    // var file = fileid;
+    var page = `${file_id}${pageid}`;
+
+    let translation_text = await axios.get(
+      `http://localhost:3002/translation?file_id=${file_id}&&page_id=${page}`
+    );
+    // console.log(translation_text);
+    if (translation_text.data.translated_text) {
+      let EditorDatafromDB = JSON.parse(translation_text.data.translated_text);
+      // let Editordata = translation_text.data.translated_text;
+      // console.log(translation_text.data);
+      setTranslationText(EditorDatafromDB);
+      setIsReadOnly(translation_text.data.is_submitted);
+    } else {
+      setTranslationText("");
+    }
+  };
   useEffect(() => {
-    getDoc();
-  }, []);
-  const MoveToPrevPage = (pageNumber) => {
+    async function getData() {
+      await getDoc();
+      await getTranslationText(pageNumber);
+      // await getFileData();
+      const getFileData = await axios.get(
+        `http://localhost:3002/getfiledata?file_id=${file_id}`
+      );
+      console.log(getFileData);
+      setFileData(getFileData);
+      GetStatusBar(getFileData);
+    }
+    getData();
+  }, [triggerRerender]);
+  const MoveToPrevPage = async (pageNumber) => {
     if (pageNumber > 1) {
       setPageNumber(pageNumber - 1);
+      await getTranslationText(pageNumber - 1);
+      // setTriggerRerender(!triggerRerender);
+      // setIsReadOnly(false);
     } else {
       setPageNumber(1);
+      await getTranslationText(pageNumber);
     }
   };
-  const MoveToNextPage = (pageNumber) => {
+  const MoveToNextPage = async (pageNumber) => {
     if (numPages > pageNumber) {
       setPageNumber(pageNumber + 1);
+      await getTranslationText(pageNumber + 1);
+      // setTriggerRerender(!triggerRerender);
     } else {
       setPageNumber(numPages);
+      await getTranslationText(pageNumber);
     }
   };
-  const SavetoDb = () => {
-    // setValue(editor.getHTML());
-    console.log(value);
-  };
-  const OnTextChange = (content, delta, source, editor) => {
-    setValue(editor.getHTML());
-    let deltaText = editor.getContents();
-    // let jsonDelta = JSON.stringify(deltaText);
-    console.log(deltaText);
+
+  const EditedText = useRef(""); // initial value
+  // const [isDraft, setIsDraft] = useState(false);
+  // const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // const [EditorText, setEditorText] = useState();
+  const setEditedData = async () => {
+    setTranslationText(Translation);
+    EditedText.current = Translation;
+    // setIsDraft(true);
+    // setIsSubmitted(false);
+    // console.log(Translation);
+    console.log(EditedText.current);
   };
 
+  const HandleSaveDraft = async (content, delta, source, editor) => {
+    await setEditedData();
+    try {
+      console.log(Translation);
+
+      const response = await axios.post("http://localhost:3002/translation", {
+        file_id: file_id,
+        page_id: `${file_id}${pageNumber}`,
+        translated_text: EditedText.current,
+        is_draft: true,
+        is_submitted: false,
+        last_updated_dt: new Date(),
+        last_updated_by: "User",
+      });
+      if (response.status == 200 || 201) {
+        // setIsDraft(true);
+        // setIsSubmitted(false);
+        setTranslationText(EditedText.current);
+        setIsReadOnly(false);
+        setDisableButton(false);
+        setTriggerRerender(!triggerRerender);
+      }
+    } catch (error) {
+      console.error(error);
+      // alert("Error happened while posting translation text");
+    }
+  };
+
+  const HandleTextSubmit = async (content, delta, source, editor) => {
+    await setEditedData();
+    try {
+      console.log(Translation);
+      const response = await axios.post("http://localhost:3002/translation", {
+        file_id: file_id,
+        page_id: `${file_id}${pageNumber}`,
+        translated_text: TranslationText,
+        is_draft: false,
+        is_submitted: true,
+        last_updated_dt: new Date(),
+        last_updated_by: "User",
+      });
+      if (response.status == 200 || 201) {
+        // setIsDraft(false);
+        // setIsSubmitted(true);
+        setIsReadOnly(true);
+        setDisableButton(true);
+        setTriggerRerender(!triggerRerender);
+      }
+    } catch (error) {
+      console.error(error);
+      // alert("Error happened while posting translation text");
+    }
+  };
+
+  const OnTextChange = async (content, delta, source, editor) => {
+    // setEditorText(Editordata);
+    let deltaText = editor.getContents();
+    let jsonDelta = JSON.stringify(deltaText);
+    Translation = jsonDelta;
+    console.log(Translation);
+    // setTranslationText(jsonDelta);
+    // console.log(jsonDelta);
+    // setEditorText(jsonDelta);
+  };
+
+  // let filterData = file_data.filter((obj) => obj.is_draft === true);
   return (
     <div className="trans_main">
       <div className="title_bar">
-        <div className="document_title">
-          <span class="arrowback material-symbols-outlined">arrow_back</span>
-          <span className="body_text"> {doctitle}</span>
-        </div>
+        <Link to={"/"}>
+          <div className="document_title">
+            <span class="arrowback material-symbols-outlined">arrow_back</span>
+            <span className="body_text">
+              {" "}
+              {doctitle.substring(0, doctitle.lastIndexOf("."))}
+            </span>
+          </div>
+        </Link>
         <div className="right_title">
           <div className="draft_btn">
             <span class="material-symbols-outlined">draft</span>
-            <span className="body_text"> SAVE DRAFT </span>
+            <button
+              className="body_text"
+              onClick={HandleSaveDraft}
+              disabled={disableButton}
+            >
+              SAVE DRAFT{" "}
+            </button>
           </div>
           <div className="save_btn">
             <span class="material-symbols-outlined">save</span>
-            <span className="body_text" onClick={SavetoDb}>
+            <button
+              className="body_text"
+              onClick={HandleTextSubmit}
+              // disabled={disableButton}
+            >
               SUBMIT
-            </span>
+            </button>
           </div>
         </div>
       </div>
@@ -119,26 +293,24 @@ function Main() {
             renderTextLayer={false}
           />
         </Document>
-
-        {/* {pdffile && <iframe src={pdffile} className="transdoc" />} */}
-        {/* <object
-          data={pdffile}
-          type="application/pdf"
-          width="100%"
-          height="100%"
-          className="transdoc"
-        ></object> */}
-        {/* <Document file={pdffile} /> */}
-        {/* <textarea ></textarea> */}
         <ReactQuill
           theme="snow"
-          value={value}
+          value={TranslationText}
           onChange={OnTextChange}
           className="sourcedoc"
           modules={modules}
           id="editor"
           placeholder={"Write something here..."}
+          readOnly={isReadOnly}
         />
+        {/* <ReactQuill
+          theme="snow"
+          // value={TranslationText}
+          id="editor"
+          className="sourcedoc"
+          // modules={quill}
+          // onChange={OnTextChange}
+        /> */}
       </div>
       <div className="trans_footer">
         <div className="left_footer">
@@ -166,11 +338,18 @@ function Main() {
           </span>
         </div>
 
+        {/* {console.log(file_data.rows)} */}
+        {/* {console.log(filterData)} */}
+        {/* {let DraftCount = file_data.rows.map(()=>{})
+        } */}
+        {/* {let  RowCount= file_data.map((obj) => {
+          obj.is_draft == true
+        })} */}
         <div className="right_footer">
-          <div className="fileStatus">Pending :{numPages - 1}</div>
-          <div className="fileStatus">In progress: 1</div>
-          <div className="fileStatus">Ready for Review:0</div>
-          <div className="fileStatus">Approved:0</div>
+          <div className="fileStatus">{`Pending :${pendingValue}`}</div>
+          <div className="fileStatus">{`In progress: ${Inprogress}`}</div>
+          <div className="fileStatus">{`Ready for Review: ${Reviewlist}`}</div>
+          <div className="fileStatus">{`Approved :0`}</div>
         </div>
       </div>
     </div>
